@@ -1,7 +1,7 @@
 import carrinho from './Carrinho.js';
 
 class Cliente{
-
+    
     constructor(nome, dtNascimento, email, cpf, celular, endereco, senha){
         //endereco = objeto de valores: rua, numero, complemento, estado
         this.nome = nome;
