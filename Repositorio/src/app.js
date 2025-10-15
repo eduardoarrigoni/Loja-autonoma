@@ -1,49 +1,46 @@
 import express from "express";
+import conectaDataBase from "./config/dbConnect.js";
+import cliente from "./models/Cliente.js";
 
+const conexao = await conectaDataBase();
+
+conexao.on("error", (erro) => {
+    console.error("erro de conexao", erro);
+});
+
+conexao.once("open", () => {
+    console.log("Conexao com banco bem sucedida");
+})
 const app = express();
 app.use(express.json());
 
-const compras = [
-    {
-        id: 1,
-        valor: 200,
-    },
-    {
-        id: 2,
-        valor: 300,
-    },
-];
 
-function buscaCompra(id){
-    return compras.findIndex(compra => {
-        return compra.id === Number(id);
-    });
-}
 app.get("/", (req, res) => {
 
     res.status(200).send("Tudo Funcionando");
 });
-app.get("/historicocompras", (req, res) => {
+app.get("/clientes", async (req, res) => {
 
-    res.status(200).json(compras);
+    const listaClientes = await cliente.find({});
+    res.status(200).json(listaClientes);
 });
-app.get("/historicocompras/:id", (req, res) => {
+app.get("/clientes/:id", (req, res) => {
     const index = buscaCompra(req.params.id);
 
     res.status(200).json(compras[index]);
 })
-app.post("/historicocompras", (req, res) => {
+app.post("/clientes", (req, res) => {
     compras.push(req.body);
     res.status(201).send("Armazenado no historico");
 });
 
-app.put("/historicocompras/:id", (req, res) => {
+app.put("/clientes/:id", (req, res) => {
     const index = buscaCompra(req.params.id);
     compras[index].valor = req.body.valor;
 
     res.status(200).json(compras);
 });
-app.delete("/historicocompras/:id", (req, res) => {
+app.delete("/clientes/:id", (req, res) => {
     const index = buscaCompra(req.params.id);
     compras.splice(index, 1);
 
