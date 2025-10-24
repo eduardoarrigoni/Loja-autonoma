@@ -1,9 +1,8 @@
 import mongoose, {mongo} from "mongoose";
-import { clienteSchema } from "./Cliente.js";
 
 const vendaSchema = new mongoose.Schema({
     id: {type: mongoose.Schema.Types.ObjectId},
-    clienteID: clienteSchema,
+    cliente: {type: mongoose.Schema.Types.ObjectId, ref: 'cliente', require: true},
     valorTotal: {type: mongoose.Schema.Types.Double, require: true},
     itens: {type: Array, require: true}
     

@@ -1,4 +1,4 @@
-import cliente from "../models/Cliente.js";
+import {cliente} from "../models/Cliente.js";
 
 class ClienteController{
 
