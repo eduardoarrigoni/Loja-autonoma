@@ -40,9 +40,12 @@ class ClienteController{
     static atualizarClienteId = async (req, res, next) => {
         try{
             const id = req.params.id;
-            await cliente.findByIdAndUpdate(id, req.body);
-
-            res.status(200).json({message: "Dados atualizados"});
+            const clienteDesejado = await cliente.findByIdAndUpdate(id, req.body);
+            if(clienteDesejado !== null){
+                res.status(200).json({message: "Dados atualizados"});
+            }else{
+                next(new NaoEncontrado("Cliente não localizado."));
+            }
         }catch(erro){
 
             next(erro);
@@ -52,9 +55,12 @@ class ClienteController{
     static deletarClienteId = async (req, res, next) => {
         try{
             const id = req.params.id;
-            await cliente.findByIdAndDelete(id);
-
-            res.status(200).json({message: "Cliente removido!"});
+            const clienteDesejado = await cliente.findByIdAndDelete(id);
+            if(clienteDesejado !== null){
+                res.status(200).json({message: "Cliente removido!"});
+            }else{
+                next(new NaoEncontrado("Cliente não localizado."));
+            }
         }catch(erro){
 
             next(erro);

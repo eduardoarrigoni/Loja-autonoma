@@ -1,5 +1,5 @@
 import {produto} from "../models/Produto.js";
-
+import NaoEncontrado from "../erros/NaoEncontrado.js";
 class ProdutoController{
 
     static listarProdutos = async (req, res, next) => {
@@ -16,7 +16,11 @@ class ProdutoController{
         try{
             const id = req.params.id;
             const produtoDesejado = await produto.findById(id);
-            res.status(200).json(produtoDesejado);
+            if(produtoDesejado !== null){
+                res.status(200).json(produtoDesejado);
+            }else{
+                next(new NaoEncontrado("Produto não localizado."));
+            }
         }catch(erro){
 
             next(erro);
@@ -35,9 +39,13 @@ class ProdutoController{
     static atualizarProdutoId = async (req, res, next) => {
         try{
             const id = req.params.id;
-            await produto.findByIdAndUpdate(id, req.body);
+            const produtoDesejado = await produto.findByIdAndUpdate(id, req.body);
 
-            res.status(200).json({message: "Dados atualizados"});
+            if(produtoDesejado !== null){
+                res.status(200).json({message: "Dados atualizados"});
+            }else{
+                next(new NaoEncontrado("Produto não localizado."));
+            }
         }catch(erro){
 
             next(erro);
@@ -47,9 +55,12 @@ class ProdutoController{
     static deletarProdutoId = async (req, res, next) => {
         try{
             const id = req.params.id;
-            await produto.findByIdAndDelete(id);
-
-            res.status(200).json({message: "Produto removido!"});
+            const produtoDesejado = await produto.findByIdAndDelete(id);
+            if(produtoDesejado !== null){
+                res.status(200).json({message: "Produto removido!"});
+            }else{
+                next(new NaoEncontrado("Produto não localizado."));
+            }
         }catch(erro){
 
             next(erro);

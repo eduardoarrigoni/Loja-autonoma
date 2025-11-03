@@ -1,41 +1,46 @@
 import venda from "../models/Venda.js";
 import { cliente } from "../models/Cliente.js";
-
+import NaoEncontrado from "../erros/NaoEncontrado.js";
 class VendaController{
 
-    static async listarVendas (req, res){
+    static listarVendas = async (req, res, next) => {
         try{
             const listaVendas = await venda.find({});
             res.status(200).json(listaVendas);
         }catch(erro){
-
-            res.status(500).json({message: `${erro.message} - falha na requisição`});
+            next(erro);
         }
     };
-    static async listarVendasIdCliente(req, res){
+    static listarVendasIdCliente = async (req, res, next) => {
 
         const clienteEncontrado = req.query.cliente;
         
         try{
             const listaVendasCliente = await venda.find({cliente: clienteEncontrado});
-
-            res.status(200).json(listaVendasCliente);
+            if(listaVendasCliente !== null){
+                res.status(200).json(listaVendasCliente);
+            }else{
+                next(new NaoEncontrado("Nenhuma venda localizada."));
+            }
         }catch(erro){
-            //colocar mais erros aqui
-            res.status(500).json({ message: `${erro.message} - cliente não encontrado`});
+            next(erro);
         }
     }
-    static async encontrarVendaId (req, res){
+    static encontrarVendaId = async (req, res, next) => {
         try{
             const id = req.params.id;
             const vendaDesejada = await venda.findById(id);
-            res.status(200).json(vendaDesejada);
+            
+            if(vendaDesejada !== null){
+                res.status(200).json(vendaDesejada);
+            }else{
+                next(new NaoEncontrado("Venda não localizada."));
+            }
         }catch(erro){
-
-            res.status(500).json({message: `${erro.message} - falha para encontrar o cliente`});
+            next(erro);
         }
     }; 
-    static async cadastrarVenda(req, res){
+    static cadastrarVenda = async (req, res, next) => {
 
         try{
             const vendaCriada = await venda.create(req.body);
@@ -43,19 +48,22 @@ class VendaController{
             res.status(201).json({ message: "criado com sucesso", venda: vendaCriada });
 
         }catch(erro){
-            res.status(500).json({ message:  `${erro.message} - falha no cadastro`});
+            next(erro);
         }
     };
 
-    static async deletarVendaId (req, res){
+    static deletarVendaId = async (req, res, next) => {
         try{
             const id = req.params.id;
-            await venda.findByIdAndDelete(id);
-
-            res.status(200).json({message: "Venda removido!"});
+            const vendaDesejada = await venda.findByIdAndDelete(id);
+            if(vendaDesejada !== null){
+                res.status(200).json({message: "Venda removida!"});
+            }else{
+                next(new NaoEncontrado("Venda não localizada."));
+            }
         }catch(erro){
-
-            res.status(500).json({message: `${erro.message} - falha na remoção do cliente`});
+            next(erro);
+            
         }
     };
 
