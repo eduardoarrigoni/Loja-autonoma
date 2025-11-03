@@ -1,3 +1,4 @@
+import NaoEncontrado from "../erros/NaoEncontrado.js";
 import {cliente} from "../models/Cliente.js";
 
 class ClienteController{
@@ -16,7 +17,11 @@ class ClienteController{
         try{
             const id = req.params.id;
             const clienteDesejado = await cliente.findById(id);
-            res.status(200).json(clienteDesejado);
+            if(clienteDesejado !== null){
+                res.status(200).json(clienteDesejado);
+            }else{
+                next(new NaoEncontrado("Cliente não localizado."));
+            }
         }catch(erro){
 
            next(erro);
