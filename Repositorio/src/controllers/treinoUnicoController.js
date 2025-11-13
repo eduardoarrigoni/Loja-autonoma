@@ -1,13 +1,33 @@
+import NaoEncontrado from "../erros/NaoEncontrado.js";
 import { treinoUnico } from "../models/TreinoUnico.js";
+import CalculoSuporte from "./CalculoSuporte.js";
 
 class treinoUnicoController{
 
+    static todostreinos = async (req, res, next) => {
+        try{
+            const treinos = await treinoUnico.find({});
+            res.status(200).json(treinos);
+        }catch(erro){
+            next(erro);
+        }
+    }
     static novoTreino = async (req, res, next) => {
 
         try{
 
-            const treinoIniciado = await treinoUnico.create(req.body);
-            res.status(201).json({message: "Treino iniciado com sucesso", treinoIniciado});
+            const tratandoTreino = req.body;
+            const { data } = tratandoTreino;
+            const dataReq = new Date;
+            if(data) dataReq = data;
+            
+            const diaDaSemana = CalculoSuporte.diaSemana(dataReq);
+            const semanaDoAno = CalculoSuporte.semanaAno(dataReq);
+            
+            tratandoTreino.diaSemana = diaDaSemana;
+            tratandoTreino.semanaAno = semanaDoAno;
+            const treino = await treinoUnico.create(tratandoTreino);
+            res.status(201).json({message: "Treino finalizado com sucesso", treino});
 
         }catch(erro){
             next(erro);
@@ -15,23 +35,41 @@ class treinoUnicoController{
 
     }
     
-    static finalizarTreino = async (req, res, next) => {
+    static treinosSemanais = async (req, res, next) => {
 
         try{
             
-            const treinoPendente = await treinoUnico.findOne({fim: "1970-01-01T00:00:00.000Z"});
-            const idTreino = treinoPendente._id;
-            console.log(idTreino);     
-            const treinoFinalizado = await treinoUnico.findByIdAndUpdate(idTreino, Date.now);
-            console.log(treinoFinalizado);
-            res.status(200).json({message: "treino finalizado", treinoFinalizado});
+            const objetoTreinosSeparadosSemanas = {};
+            const treinosSemana = await treinoUnico.find({});
+            objetoTreinosSeparadosSemanas = treinosSemana.map( (treino) => {
+                
+                objetoTreinosSeparadosSemanas[treino.semanaAno].push(treino);
 
+            })
+            
+            res.status(200).json(objetoTreinosSeparadosSemanas);
         }catch(erro){
 
             next(erro);
         }
     }
 
+    static deletarTreinoId = async (req, res, next) => {
+
+        try{
+            const idTreino = req.params.id;
+            const treinoDesejado = await treinoUnico.findByIdAndDelete(idTreino);
+
+            if(treinoDesejado !== null){
+                res.status(200).json({message: "Treino removido."});
+            }else{
+                next(new NaoEncontrado("Treino não encontrado."));
+            }
+        }catch(erro){
+            next(erro);
+        }
+    }
+        
 
 
 }
